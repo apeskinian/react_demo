@@ -17,6 +17,7 @@ export default function NewPost({ onCancel, onAddPost }) {
     function handleSubmit(event) {
         event.preventDefault();
         const postData = {
+            id: authorText + Math.random(),
             body: bodyText,
             author: authorText
         };
