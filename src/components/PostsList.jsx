@@ -1,30 +1,37 @@
 import classes from './PostsList.module.css'
 
 import Post from './Post'
-import NewPost from './NewPost'
-import Modal from './Modal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-export default function PostsList({ isPosting, onStopPosting }) {
+export default function PostsList() {
     const [posts, setPosts] = useState([]);
+    const [ isFetching, setIsFetching ] = useState(false);
+    
+    useEffect(() => {
+        async function fetchPosts() {
+            setIsFetching(true);
+            const response = await fetch('http://localhost:8080/posts')
+            const resData = await response.json();
+            setPosts(resData.posts);
+            setIsFetching(false);
+        }
+        fetchPosts();
+    }, [])
 
     function handleAddPost(postData) {
+        fetch('http://localhost:8080/posts', {
+            method: 'POST',
+            body: JSON.stringify(postData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         setPosts(prevPosts => [postData, ...prevPosts])
         onStopPosting();
     }
 
-    const modal = (
-        <Modal onClose={onStopPosting}>
-            <NewPost
-                onAddPost={handleAddPost}
-                onCancel={onStopPosting}
-            />
-        </Modal>
-    )
-
     return (
         <>
-            {isPosting && modal}
             {posts.length > 0 &&
                 <ul className={classes.posts}>
                     {posts.map((post) => (
@@ -32,10 +39,15 @@ export default function PostsList({ isPosting, onStopPosting }) {
                     ))}
                 </ul>
             }
-            {posts.length === 0 && 
+            {!isFetching && posts.length === 0 && 
                 <div style={{textAlign: 'center', color: 'white'}}>
                     <h2>There are no posts yet.</h2>
                     <p>Start adding some!</p>
+                </div>
+            }
+            {isFetching && 
+                <div style={{textAlign: 'center', color: 'white'}}>
+                    <p>Loading posts...</p>
                 </div>
             }
         </>
