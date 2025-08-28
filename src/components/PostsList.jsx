@@ -1,28 +1,23 @@
-import { useState } from 'react'
-
 import classes from './PostsList.module.css'
 
 import Post from './Post'
 import NewPost from './NewPost'
 import Modal from './Modal'
+import { useState } from 'react'
 
 export default function PostsList({ isPosting, onStopPosting }) {
-    const [bodyText, setBodyText] = useState('');
-    const [authorText, setAuthorText] = useState('');
+    const [ posts, setPosts ] = useState([]);
 
-    function handleBodyChange(event) {
-        setBodyText(event.target.value);
-    }
-
-    function handleAuthorChange(event) {
-        setAuthorText(event.target.value);
+    function handleAddPost(postData) {
+        setPosts(prevPosts => [postData, ...prevPosts])
+        onStopPosting();
     }
 
     const modal = (
         <Modal onClose={onStopPosting}>
             <NewPost
-                onBodyChange={handleBodyChange}
-                onAuthorChange={handleAuthorChange}
+                onAddPost={handleAddPost}
+                onCancel={onStopPosting}
             />
         </Modal>
     )
@@ -31,8 +26,9 @@ export default function PostsList({ isPosting, onStopPosting }) {
         <>
             {isPosting && modal}
             <ul className={classes.posts}>
-                <Post author={authorText} body={bodyText} />
-                <Post author='Niamh' body='React is brilliant' />
+                {posts.map((post) => (
+                    <Post author={post.author} body={post.body}/>
+                ))}
             </ul>
         </>
     )
